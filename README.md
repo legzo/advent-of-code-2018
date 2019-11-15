@@ -1,7 +1,3 @@
-# ⚡️ Dojo Starter [![Build Status](https://travis-ci.org/legzo/dojo-starter-kotlin.svg?branch=master)](https://travis-ci.org/legzo/dojo-starter-kotlin)
+# Advent of code 2018
 
-- Kotlin 1.3.50
-- JUnit 5
-- Kotlintest assertions
-
-Enjoy ❤
+Made in Kotlin with ❤
