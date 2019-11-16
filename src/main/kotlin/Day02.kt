@@ -1,27 +1,37 @@
-fun List<String>.calculateChecksum(): Int {
+fun List<String>.calculateChecksum() =
+    fold(Counters.empty()) { counters, word ->
+        counters.incrementFor(word)
+    }.checksum()
 
-    val occurences = this
-        .fold(mapOf(2 to 0, 3 to 0)) { map, word ->
-            val count = word.toCharArray()
-                .toList()
-                .groupingBy {
-                    it
-                }
-                .eachCount()
-                .values
-                .groupBy { it }
-                .mapValues { it.value.size }
+data class Counters(val exactlyTwo: Int, val exactlyThree: Int) {
 
-            mapOf(
-                2 to map.getFor(2) + count.oneIfPresent(2),
-                3 to map.getFor(3) + count.oneIfPresent(3)
-            )
-        }
+    class ResultForWord(word: String) {
+        private val letterOccurences = word
+            .toCharArray()
+            .toList()
+            .groupingBy { it }
+            .eachCount()
+            .values
+            .groupBy { it }
+            .mapValues { it.value.size }
 
-    return occurences.getFor(2) * occurences.getFor(3)
+        val exactlyTwo = letterOccurences.containsKey(2)
+        val exactlyThree = letterOccurences.containsKey(3)
+    }
+
+    fun checksum() = exactlyTwo * exactlyThree
+
+    fun incrementFor(word: String): Counters {
+        val resultForWord = ResultForWord(word)
+
+        return Counters(
+            if (resultForWord.exactlyTwo) exactlyTwo + 1 else exactlyTwo,
+            if (resultForWord.exactlyThree) exactlyThree + 1 else exactlyThree
+        )
+    }
+
+    companion object {
+        fun empty() = Counters(0, 0)
+    }
 }
-
-private fun Map<Int, Int>.oneIfPresent(key: Int) = if (containsKey(key)) 1 else 0
-
-private fun Map<Int, Int>.getFor(i: Int) = this.getOrDefault(i, 0)
 
