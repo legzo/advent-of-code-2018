@@ -3,7 +3,8 @@ import java.io.File
 fun main() {
     //solveDay01Part1()
     //solveDay01Part2()
-    solveDay02Part1()
+    //solveDay02Part1()
+    solveDay02Part2()
 }
 
 fun solveDay01Part1() {
@@ -19,6 +20,11 @@ fun solveDay01Part2() {
 fun solveDay02Part1() {
     println(getLinesFromFile("day_02/boxes.txt")
         .calculateChecksum()) // 9139
+}
+
+fun solveDay02Part2() {
+    println(getLinesFromFile("day_02/boxes.txt")
+        .findCommonLetters()) // uqcidadzwtnhsljvxyobmkfyr
 }
 
 private fun getLinesFromFile(filename: String) =

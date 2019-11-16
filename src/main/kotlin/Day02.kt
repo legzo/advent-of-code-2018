@@ -1,3 +1,4 @@
+//<editor-fold desc="Part 1">
 fun List<String>.calculateChecksum() =
     fold(Counters.empty()) { counters, word ->
         counters.incrementFor(word)
@@ -34,4 +35,31 @@ data class Counters(val exactlyTwo: Int, val exactlyThree: Int) {
         fun empty() = Counters(0, 0)
     }
 }
+//</editor-fold>
 
+
+//<editor-fold desc="Part 2">
+fun List<String>.findCommonLetters(): String? {
+    return mapNotNull { boxId ->
+        findMatchingBox(boxId)?.commonCharsWith(boxId)
+    }.firstOrNull()
+}
+
+private fun List<String>.findMatchingBox(boxId: String) =
+    firstOrNull {
+        boxId differByOnlyOneCharFrom it
+    }
+
+
+infix fun String.differByOnlyOneCharFrom(other: String) =
+    zip(other).count { (first, second) ->
+        first != second
+    } == 1
+
+fun String.commonCharsWith(other: String) =
+    zip(other).filter { (first, second) ->
+        first == second
+    }
+    .joinToString(separator = "") { it.first.toString() }
+
+//</editor-fold>
