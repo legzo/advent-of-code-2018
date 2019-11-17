@@ -4,7 +4,8 @@ fun main() {
     //solveDay01Part1()
     //solveDay01Part2()
     //solveDay02Part1()
-    solveDay02Part2()
+    //solveDay02Part2()
+    solveDay03Part1()
 }
 
 fun solveDay01Part1() {
@@ -25,6 +26,11 @@ fun solveDay02Part1() {
 fun solveDay02Part2() {
     println(getLinesFromFile("day_02/boxes.txt")
         .findCommonLetters()) // uqcidadzwtnhsljvxyobmkfyr
+}
+
+fun solveDay03Part1() {
+    println(getLinesFromFile("day_03/claims.txt")
+        .countOverlapingPositions()) //
 }
 
 private fun getLinesFromFile(filename: String) =
