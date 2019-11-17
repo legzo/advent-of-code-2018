@@ -5,7 +5,8 @@ fun main() {
     //solveDay01Part2()
     //solveDay02Part1()
     //solveDay02Part2()
-    solveDay03Part1()
+    //solveDay03Part1()
+    solveDay03Part2()
 }
 
 fun solveDay01Part1() {
@@ -30,7 +31,12 @@ fun solveDay02Part2() {
 
 fun solveDay03Part1() {
     println(getLinesFromFile("day_03/claims.txt")
-        .countOverlapingPositions()) //
+        .countOverlapingPositions()) // 107663
+}
+
+fun solveDay03Part2() {
+    println(getLinesFromFile("day_03/claims.txt")
+        .getIntactClaimId()) // 1166
 }
 
 private fun getLinesFromFile(filename: String) =

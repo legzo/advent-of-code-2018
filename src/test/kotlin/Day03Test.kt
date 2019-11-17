@@ -6,7 +6,11 @@ class Day03Test {
 
     @Test
     fun `load claim from string`() {
-        Claim("#1 @ 1,3: 4x4").positions shouldContainExactlyInAnyOrder listOf(
+        val claim = Claim("#1 @ 1,3: 4x4")
+
+        claim.id shouldBe "1"
+
+        claim.positions shouldContainExactlyInAnyOrder listOf(
             Position(1, 3),
             Position(2, 3),
             Position(3, 3),
@@ -39,6 +43,16 @@ class Day03Test {
             "#3 @ 5,5: 2x2"
         ).countOverlapingPositions() shouldBe 4
     }
+
+    @Test
+    fun `get intact claim id`() {
+        listOf(
+            "#1 @ 1,3: 4x4",
+            "#2 @ 3,1: 4x4",
+            "#3 @ 5,5: 2x2"
+        ).getIntactClaimId() shouldBe "3"
+    }
+
 }
 
 

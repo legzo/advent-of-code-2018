@@ -4,6 +4,7 @@ data class Position(val x: Int, val y: Int)
 
 class Claim(stringRepresentation: String) {
 
+    val id: String
     val positions: List<Position>
 
     init {
@@ -11,6 +12,7 @@ class Claim(stringRepresentation: String) {
         val tokens = stringRepresentation
             .split('@', ',', ':', 'x')
 
+        id = tokens[0].replace("#", "").trim()
         val topLeftX = tokens.getInt(1)
         val topLeftY = tokens.getInt(2)
         val width = tokens.getInt(3)
@@ -28,10 +30,27 @@ class Claim(stringRepresentation: String) {
     private fun List<String>.getInt(position: Int) = this[position].trim().toInt()
 }
 
-
-fun List<String>.countOverlapingPositions() =
+fun List<String>.getOverlapingPositions() =
     flatMap { Claim(it).positions }
         .groupBy { it }
-        .count { it.value.size > 1 }
+        .filter { it.value.size > 1 }
+        .keys
+
+fun List<String>.countOverlapingPositions() =
+    getOverlapingPositions().count()
+
+//</editor-fold>
+
+//<editor-fold desc="Part 2">
+
+fun List<String>.getIntactClaimId(): String? {
+    val overlapingPositions = getOverlapingPositions()
+    return map { Claim(it) }
+        .firstOrNull {
+            it.positions.all { position ->
+                position !in overlapingPositions
+            }
+        }?.id
+}
 
 //</editor-fold>
