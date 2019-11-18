@@ -1,11 +1,12 @@
+import GuardEvent.FallingAsleepEvent
+import GuardEvent.WakingUpEvent
 import java.time.LocalDate
 
-sealed class GuardEvent {
+sealed class GuardEvent(val timeStamp: TimeStamp) {
 
-    data class NewShiftEvent(val timeStamp: TimeStamp, val guardId: String) : GuardEvent()
-    data class FallingAsleepEvent(val timeStamp: TimeStamp) : GuardEvent()
-    data class WakingUpEvent(val timeStamp: TimeStamp) : GuardEvent()
-    object UnknownEvent : GuardEvent()
+    class NewShiftEvent(timeStamp: TimeStamp, val guardId: Int) : GuardEvent(timeStamp)
+    class FallingAsleepEvent(timeStamp: TimeStamp) : GuardEvent(timeStamp)
+    class WakingUpEvent(timeStamp: TimeStamp) : GuardEvent(timeStamp)
 
     companion object {
 
@@ -14,41 +15,32 @@ sealed class GuardEvent {
 
         data class TimeStamp(val day: LocalDate, val minute: Int)
 
-        fun fromString(input: String): GuardEvent {
-            val timeStamp = input.parseTimeStamp() ?: return UnknownEvent
+        fun fromString(input: String): GuardEvent? {
+            val timeStamp = input.parseTimeStamp() ?: return null
 
             return when {
                 input.endsWith("wakes up") -> WakingUpEvent(timeStamp)
                 input.endsWith("falls asleep") -> FallingAsleepEvent(timeStamp)
                 regexForNewShift.containsMatchIn(input) -> {
-                    val guardId = input.parseGuardId() ?: return UnknownEvent
-                    NewShiftEvent(timeStamp, guardId)
+                    val guardId = input.parseGuardId() ?: return null
+                    NewShiftEvent(timeStamp.correctForEarlyStart(), guardId.toInt())
                 }
-                else -> UnknownEvent
+                else -> null
             }
         }
 
         //<editor-fold desc="Utils">
 
-        private fun String.parseTimeStamp(): TimeStamp? {
-            return regexForDate
+        private fun String.parseTimeStamp() =
+            regexForDate
                 .find(this)
                 ?.groupValues
                 ?.let {
-                    val parsedMinute = it[2].toInt()
-                    val parsedDay = LocalDate.parse(it[1])
-
-                    getCorrectedTimestamp(parsedDay, parsedMinute)
+                    TimeStamp(
+                        day = LocalDate.parse(it[1]),
+                        minute = it[2].toInt()
+                    )
                 }
-        }
-
-        private fun getCorrectedTimestamp(
-            parsedDay: LocalDate,
-            parsedMinute: Int
-        ) = TimeStamp(
-            day = if (parsedMinute > 50) parsedDay.plusDays(1) else parsedDay,
-            minute = if (parsedMinute > 50) 0 else parsedMinute
-        )
 
         private fun String.parseGuardId() =
             regexForNewShift
@@ -56,21 +48,29 @@ sealed class GuardEvent {
                 ?.groupValues
                 ?.get(1)
 
+        private fun TimeStamp.correctForEarlyStart() =
+            TimeStamp(
+                day = if (minute > 40) day.plusDays(1) else day,
+                minute = if (minute > 40) 0 else minute
+            )
+
         //</editor-fold>
     }
 
 }
 
-fun List<String>.getAsleepMinutes(): List<Int> {
+data class GuardReport(val day: LocalDate, val guardId: Int, val asleepMinutes: List<Int>)
 
-    fun List<String>.wakingUpEvents() =
-        this.map { GuardEvent.fromString(it) }
-            .filterIsInstance<GuardEvent.WakingUpEvent>()
+fun List<String>.parseEvents(): List<GuardEvent> =
+    mapNotNull { GuardEvent.fromString(it) }
+        .sortedBy { it.timeStamp.minute }
+        .sortedBy { it.timeStamp.day }
 
-    fun List<String>.fallingAsleepEvents() =
-        this.map { GuardEvent.fromString(it) }
-            .filterIsInstance<GuardEvent.FallingAsleepEvent>()
+fun List<GuardEvent>.wakingUpEvents() = filterIsInstance<WakingUpEvent>()
 
+fun List<GuardEvent>.fallingAsleepEvents() = filterIsInstance<FallingAsleepEvent>()
+
+private fun List<GuardEvent>.getAsleepMinutesForEvents(): List<Int> {
     return fallingAsleepEvents()
         .zip(wakingUpEvents())
         .flatMap { (fallingAsleepEvent, wakingUpEvent) ->
@@ -81,3 +81,32 @@ fun List<String>.getAsleepMinutes(): List<Int> {
         }
 }
 
+fun List<String>.getGuardId() = parseEvents().getGuardIdForEvents()
+
+private fun List<GuardEvent>.getGuardIdForEvents() = filterIsInstance<GuardEvent.NewShiftEvent>().first().guardId
+
+fun List<String>.getAsleepMinutes() = parseEvents().getAsleepMinutesForEvents()
+
+fun List<String>.calculateAsleepMinutes() =
+    parseEvents()
+        .groupBy { it.timeStamp.day }
+        .map { GuardReport(it.key, it.value.getGuardIdForEvents(), it.value.getAsleepMinutesForEvents()) }
+
+
+fun List<String>.getSleepiestGuardId() = getSleepiestGuardRecords()?.key ?: 0
+
+fun List<String>.getSleepiestGuardSleepiestMinute() =
+    getSleepiestGuardRecords()
+        ?.value
+        ?.flatMap { it.asleepMinutes }
+        ?.groupBy { it }
+        ?.maxBy { it.value.size }
+        ?.key
+        ?: 0
+
+private fun List<String>.getSleepiestGuardRecords() =
+    calculateAsleepMinutes()
+        .groupBy { it.guardId }
+        .maxBy { it.value.sumBy { report -> report.asleepMinutes.size } }
+
+fun List<String>.getChecksumForStrategy1() = getSleepiestGuardId() * getSleepiestGuardSleepiestMinute()
