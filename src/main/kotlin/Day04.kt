@@ -28,6 +28,8 @@ sealed class GuardEvent {
             }
         }
 
+        //<editor-fold desc="Utils">
+
         private fun String.parseTimeStamp(): TimeStamp? {
             return regexForDate
                 .find(this)
@@ -53,6 +55,29 @@ sealed class GuardEvent {
                 .find(this)
                 ?.groupValues
                 ?.get(1)
+
+        //</editor-fold>
     }
 
 }
+
+fun List<String>.getAsleepMinutes(): List<Int> {
+
+    fun List<String>.wakingUpEvents() =
+        this.map { GuardEvent.fromString(it) }
+            .filterIsInstance<GuardEvent.WakingUpEvent>()
+
+    fun List<String>.fallingAsleepEvents() =
+        this.map { GuardEvent.fromString(it) }
+            .filterIsInstance<GuardEvent.FallingAsleepEvent>()
+
+    return fallingAsleepEvents()
+        .zip(wakingUpEvents())
+        .flatMap { (fallingAsleepEvent, wakingUpEvent) ->
+            (0..60).filter {
+                fallingAsleepEvent.timeStamp.minute <= it
+                        && it < wakingUpEvent.timeStamp.minute
+            }
+        }
+}
+

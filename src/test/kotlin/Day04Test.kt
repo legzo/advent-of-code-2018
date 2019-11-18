@@ -1,4 +1,3 @@
-
 import GuardEvent.FallingAsleepEvent
 import GuardEvent.NewShiftEvent
 import GuardEvent.WakingUpEvent
@@ -61,6 +60,23 @@ class Day04Test {
             }
             else -> fail("Bad event type")
         }
+    }
+
+    @Test
+    fun `get asleep minutes for one night`() {
+        listOf(
+            "[1518-11-01 23:58] Guard #99 begins shift",
+            "[1518-11-02 00:40] falls asleep",
+            "[1518-11-02 00:50] wakes up"
+        ).getAsleepMinutes() shouldBe listOf(40, 41, 42, 43, 44, 45, 46, 47, 48, 49)
+
+        listOf(
+            "[1518-11-01 00:00] Guard #10 begins shift",
+            "[1518-11-01 00:05] falls asleep",
+            "[1518-11-01 00:10] wakes up",
+            "[1518-11-01 00:30] falls asleep",
+            "[1518-11-01 00:32] wakes up"
+        ).getAsleepMinutes() shouldBe listOf(5, 6, 7, 8, 9, 30, 31)
     }
 
 }
