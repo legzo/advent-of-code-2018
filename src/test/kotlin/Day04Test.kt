@@ -136,4 +136,9 @@ class Day04Test {
     fun `get checksum for strategy 1`() {
         fullDataset.getChecksumForStrategy1() shouldBe 240
     }
+
+    @Test
+    fun `get checksum for strategy 2`() {
+        fullDataset.getChecksumForStrategy2() shouldBe 4455
+    }
 }

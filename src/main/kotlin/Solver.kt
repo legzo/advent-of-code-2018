@@ -7,7 +7,8 @@ fun main() {
     //solveDay02Part2()
     //solveDay03Part1()
     //solveDay03Part2()
-    solveDay04Part1()
+    //solveDay04Part1()
+    solveDay04Part2()
 }
 
 fun solveDay01Part1() {
@@ -43,6 +44,11 @@ fun solveDay03Part2() {
 fun solveDay04Part1() {
     println(getLinesFromFile("day_04/shifts.log")
         .getChecksumForStrategy1()) // 101262
+}
+
+fun solveDay04Part2() {
+    println(getLinesFromFile("day_04/shifts.log")
+        .getChecksumForStrategy2()) // 71976
 }
 
 private fun getLinesFromFile(filename: String) =

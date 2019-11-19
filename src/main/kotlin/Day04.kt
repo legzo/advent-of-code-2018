@@ -110,3 +110,26 @@ private fun List<String>.getSleepiestGuardRecords() =
         .maxBy { it.value.sumBy { report -> report.asleepMinutes.size } }
 
 fun List<String>.getChecksumForStrategy1() = getSleepiestGuardId() * getSleepiestGuardSleepiestMinute()
+
+fun List<String>.getChecksumForStrategy2(): Int? {
+    val sleepiestMinuteByGuardId = calculateAsleepMinutes()
+        .groupBy { it.guardId }
+        .mapValues { (_, reports) ->
+            reports.findSleepiestMinute()
+        }
+
+    val (guardId, sleepiestMinuteForThisGuard) = sleepiestMinuteByGuardId
+        .maxBy { it.value.second }
+        ?: return null
+
+    return guardId * sleepiestMinuteForThisGuard.first
+}
+
+private fun List<GuardReport>.findSleepiestMinute() =
+    flatMap { report -> report.asleepMinutes }
+        .groupingBy { it }
+        .eachCount()
+        .maxBy { it.value }
+        ?.toPair()
+        ?: 0 to 0
+
