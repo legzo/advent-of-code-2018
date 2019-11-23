@@ -8,7 +8,8 @@ fun main() {
     //solveDay03Part1()
     //solveDay03Part2()
     //solveDay04Part1()
-    solveDay04Part2()
+    //solveDay04Part2()
+    solveDay05Part1()
 }
 
 fun solveDay01Part1() {
@@ -49,6 +50,11 @@ fun solveDay04Part1() {
 fun solveDay04Part2() {
     println(getLinesFromFile("day_04/shifts.log")
         .getChecksumForStrategy2()) // 71976
+}
+
+fun solveDay05Part1() {
+    println(Polymer(getLinesFromFile("day_05/polymer.struct")[0])
+        .fullyReact()) // 71976
 }
 
 private fun getLinesFromFile(filename: String) =
