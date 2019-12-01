@@ -9,7 +9,8 @@ fun main() {
     //solveDay03Part2()
     //solveDay04Part1()
     //solveDay04Part2()
-    solveDay05Part1()
+    //solveDay05Part1()
+    solveDay05Part2()
 }
 
 fun solveDay01Part1() {
@@ -54,8 +55,12 @@ fun solveDay04Part2() {
 
 fun solveDay05Part1() {
     println(Polymer(getLinesFromFile("day_05/polymer.struct")[0])
-        .fullyReact()) // 71976
+        .reactFully().size) // 10878
 }
 
+fun solveDay05Part2() {
+    println(Polymer(getLinesFromFile("day_05/polymer.struct")[0])
+        .findShortestPolymerLength()) // 71976
+}
 private fun getLinesFromFile(filename: String) =
     File("src/main/resources/$filename").readLines()
