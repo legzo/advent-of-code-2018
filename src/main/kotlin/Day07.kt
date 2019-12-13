@@ -3,21 +3,23 @@ import Status.DONE
 import Status.PENDING
 import Status.WAITING
 
-typealias Requirements = Map<String, Task>
 typealias ListOfDependencies = List<Pair<String, String>>
-
-data class Step(val stepLetter: String, val newRequirements: Requirements)
 
 enum class Status { WAITING, PENDING, DONE, CLOSED }
 
 data class Task(
     val id: String,
-    val requirements: MutableList<Task> = mutableListOf(),
-    var completionStep: Int = 0,
-    var status: Status = WAITING,
-    val offset: Int = 0
+    val requirements: List<String> = listOf(),
+    private val initialStatus: Status = WAITING,
+    private val offset: Int = 0
 ) {
+
     private val stepsNeededForCompletion = offset + id.first().toInt() - 'A'.toInt()
+
+    private var completionStep = 0
+
+    var status = initialStatus
+        private set
 
     val completed
         get() = status in listOf(DONE, CLOSED)
@@ -37,81 +39,56 @@ data class Task(
             status = DONE
         }
     }
-
-    companion object {
-        private val tasks: MutableMap<String, Task> = mutableMapOf()
-
-        fun create(id: String, durationOffset: Int): Task {
-            val newTask = Task(id, offset = durationOffset)
-            tasks[id] = newTask
-            return newTask
-        }
-
-        fun forId(id: String) = tasks[id]
-    }
 }
 
-fun Requirements.allCompleted() = values.all { it.completed }
+private fun List<Task>.allCompleted() = all { it.completed }
 
-val regexForDependency = Regex("Step (\\w) must be finished before step (\\w) can begin.")
-
-fun ListOfDependencies.toRequirements(taskDurationOffset: Int): Requirements {
+private fun ListOfDependencies.toRequirements(taskDurationOffset: Int): List<Task> {
     val unzipped = unzip()
     val requirements = unzipped.first.toSet()
     val unlockedSteps = unzipped.second.toSet()
     val allLetters = requirements + unlockedSteps
 
-    val tasksWithoutDependencies = allLetters
-        .map { Task.create(it, taskDurationOffset) }
-
-    tasksWithoutDependencies
-        .forEach { task ->
-            task.requirements += getDependenciesFor(task.id)
-        }
-
-    return tasksWithoutDependencies
-        .map { task -> task.id to task }
-        .toMap()
+    return allLetters
+        .map { Task(id = it, requirements = getDependenciesFor(it), offset = taskDurationOffset) }
 }
 
-private fun ListOfDependencies.getDependenciesFor(
-    letter: String
-): List<Task> {
-    return filter { (_, value) -> value == letter }
-        .mapNotNull { (required, _) ->
-            Task.forId(required)
-        }
-}
+private fun ListOfDependencies.getDependenciesFor(letter: String) =
+    filter { (_, value) -> value == letter }
+        .map { (required, _) -> required }
 
-fun Requirements.nextStep(numberOfWorkers: Int) {
+private fun List<Task>.nextStep(numberOfWorkers: Int) {
     getAvailableTasks()
         .sortedBy { it.id }
         .take(numberOfWorkers - getPendingTasks().size)
         .forEach { it.start() }
 
-    values
-        .forEach { it.advance() }
+    forEach { it.advance() }
 }
 
-fun Requirements.getAvailableTasks(): List<Task> {
-    return values
-        .filter {
-            it.requirements.all { req -> req.completed }
-                    && it.status == WAITING
-        }
+fun List<Task>.getAvailableTasks() =
+    filter { it.status == WAITING && allRequirementsCompletedFor(it) }
+
+private fun List<Task>.allRequirementsCompletedFor(task: Task): Boolean {
+    return task.requirements
+        .map { taskById(it) }
+        .allCompleted()
 }
 
-fun Requirements.getFinishedTasksIds() =
-    values
-        .filter { it.status == DONE }
+private fun List<Task>.taskById(taskId: String) = this.first { it.id == taskId }
+
+private fun List<Task>.getFinishedTasksIds() =
+    filter { it.status == DONE }
         .joinToString(separator = "") { it.id }
 
-fun Requirements.getPendingTasks() = values.filter { it.status == PENDING }
+private fun List<Task>.getPendingTasks() = filter { it.status == PENDING }
 
 fun List<String>.toStepSequence(
     taskDurationOffset: Int = 0,
     numberOfWorkers: Int
 ): StepSequence {
+    val regexForDependency = Regex("Step (\\w) must be finished before step (\\w) can begin.")
+
     val requirements = mapNotNull { line -> regexForDependency.find(line) }
         .map {
             val (requirement, unlockedStep) = it.destructured
@@ -124,18 +101,18 @@ fun List<String>.toStepSequence(
 
 data class StepSequence(val numberOfSteps: Int, val sequence: String)
 
-tailrec fun buildStepSequence(
-    requirements: Requirements,
+private tailrec fun buildStepSequence(
+    tasks: List<Task>,
     stepSequence: StepSequence,
     numberOfWorkers: Int
 ): StepSequence {
-    return if (requirements.allCompleted()) stepSequence
+    return if (tasks.allCompleted()) stepSequence
     else {
-        requirements.nextStep(numberOfWorkers)
+        tasks.nextStep(numberOfWorkers)
 
         buildStepSequence(
-            requirements,
-            StepSequence(stepSequence.numberOfSteps + 1, stepSequence.sequence + requirements.getFinishedTasksIds()),
+            tasks,
+            StepSequence(stepSequence.numberOfSteps + 1, stepSequence.sequence + tasks.getFinishedTasksIds()),
             numberOfWorkers
         )
     }
