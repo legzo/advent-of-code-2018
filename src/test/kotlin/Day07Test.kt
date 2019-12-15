@@ -1,4 +1,3 @@
-
 import Status.CLOSED
 import Status.DONE
 import Status.PENDING
@@ -21,9 +20,9 @@ class Day07Test {
     @Test
     fun `should get step sequence with single worker`() {
         input.toStepSequence(
-                taskDurationOffset = 0,
-                numberOfWorkers = 1
-            ).sequence shouldBe "CABDFE"
+            taskDurationOffset = 0,
+            numberOfWorkers = 1
+        ).sequence shouldBe "CABDFE"
     }
 
     @Test
@@ -39,18 +38,18 @@ class Day07Test {
 
     @Test
     fun `should advancing task be done`() {
-        val task = Task(id = "A", status = PENDING, offset = 60)
-        task.advance30Times()
+        val task = Task(id = "A", initialStatus = PENDING, offset = 60)
+        repeat(30) { task.advance() }
         task.status shouldBe PENDING
-        task.advance30Times()
+        repeat(30) { task.advance() }
         task.status shouldBe PENDING
         task.advance()
         task.status shouldBe DONE
 
-        val taskB = Task(id = "D", status = PENDING, offset = 60)
-        taskB.advance30Times()
+        val taskB = Task(id = "D", initialStatus = PENDING, offset = 60)
+        repeat(30) { taskB.advance() }
         taskB.status shouldBe PENDING
-        taskB.advance30Times()
+        repeat(30) { taskB.advance() }
         taskB.status shouldBe PENDING
         taskB.advance()
         taskB.advance()
@@ -59,30 +58,18 @@ class Day07Test {
         taskB.status shouldBe DONE
     }
 
-    private fun Task.advance30Times() {
-        for (i in 0 until 30) {
-            advance()
-        }
-    }
-
     @Test
     fun `should return completed tasks`() {
-        val taskZ = Task("Z", status = CLOSED)
+        val taskZ = Task("Z", initialStatus = CLOSED)
         val taskA = Task("A")
-        val taskB = Task("B", mutableListOf(taskA))
-        val taskC = Task("C", mutableListOf(taskZ))
+        val taskB = Task("B", listOf("A"))
+        val taskC = Task("C", listOf("Z"))
 
-        mapOf("A" to taskA).getAvailableTasks() shouldBe listOf(taskA)
+        listOf(taskA).getAvailableTasks() shouldBe listOf(taskA)
 
-        mapOf(
-            "A" to taskA,
-            "B" to taskB
-        ).getAvailableTasks() shouldBe listOf(taskA)
+        listOf(taskA, taskB).getAvailableTasks() shouldBe listOf(taskA)
 
-        mapOf(
-            "A" to taskA,
-            "C" to taskC
-        ).getAvailableTasks() shouldBe listOf(taskA, taskC)
+        listOf(taskA, taskC, taskZ).getAvailableTasks() shouldBe listOf(taskA, taskC)
     }
 }
 
