@@ -15,6 +15,7 @@ fun main() {
     //solveDay07Part2()
     //solveDay08Part1()
     //solveDay08Part2()
+    solveDay10Part1And2()
 }
 
 fun solveDay01Part1() {
@@ -111,6 +112,15 @@ fun solveDay08Part1() {
 fun solveDay08Part2() {
     val input = getListOfIntsFromFile("day_08/input")
     println(MyTreeNode.parseNode(input).node.value)
+}
+
+fun solveDay10Part1And2() {
+    val particles = Particle.loadList(getLinesFromFile("day_10/particles"))
+
+    val (finalParticles, steps) = particles.getStateWithMessage()
+
+    println(finalParticles.draw()) // GFNKCGGH
+    println(steps) // 10274
 }
 
 private fun getListOfIntsFromFile(filename: String) =
