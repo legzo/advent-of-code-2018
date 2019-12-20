@@ -22,7 +22,12 @@ class Day06Test {
 
     @Test
     fun `should get areas from coordinates`() {
-        // TODO Grid(inputCoords).largestAreaSize shouldBe 17
+        Grid(inputCoords).largestAreaSize shouldBe 17
+    }
+
+    @Test
+    fun `should get safeAreas from coordinates`() {
+        Grid(inputCoords).safeAreaSize shouldBe 16
     }
 }
 

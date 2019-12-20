@@ -11,11 +11,12 @@ fun main() {
     //solveDay04Part2()
     //solveDay05Part1()
     //solveDay05Part2()
+    solveDay06Part1And2()
     //solveDay07Part1()
     //solveDay07Part2()
     //solveDay08Part1()
     //solveDay08Part2()
-    solveDay10Part1And2()
+    //solveDay10Part1And2()
 }
 
 fun solveDay01Part1() {
@@ -87,6 +88,16 @@ fun solveDay05Part2() {
             .findShortestPolymerLength()
     ) // 71976
 }
+
+fun solveDay06Part1And2() {
+    val grid = Grid(getLinesFromFile("day_06/input").map {
+        val (x, y) = it.split(", ")
+        Coords(x.toInt(), y.toInt())
+    })
+    println(grid.largestAreaSize) // 5532
+    println(grid.safeAreaSize) // 36216
+}
+
 
 fun solveDay07Part1() {
     println(
