@@ -16,6 +16,13 @@ data class Grid(val centers: List<Center>) {
         y = centers.maxBy { it.y }!!.y
     )
 
+    private val allPoints =
+        (min.y..max.y).flatMap { y ->
+            (min.x..max.x).map { x ->
+                Point(x, y)
+            }
+        }
+
     val largestAreaSize: Int
         get() = pointsToClosestCenter()
             .groupBy { it.second }
@@ -25,26 +32,20 @@ data class Grid(val centers: List<Center>) {
             .max() ?: 0
 
     fun getSafestAreaSizeFor(maxDistance: Int) =
-        (min.y..max.y).flatMap { y ->
-            (min.x..max.x).map { x ->
-                centers.sumBy { Point(x, y).distanceTo(it) }
-            }
-        }.count { it < maxDistance }
-
+        allPoints
+            .count { point -> centers.sumBy { point.distanceTo(it) } < maxDistance }
 
     private fun pointsToClosestCenter(): List<Pair<Point, Center>> {
-        return (min.y..max.y).flatMap { y ->
-            (min.x..max.x).mapNotNull { x ->
-                val point = Point(x, y)
+        return allPoints
+            .mapNotNull {point ->
                 val closestCenters = point.distancesToCenters()
-                    .minBy { it.key }!!
-                    .value
+                .minBy { it.key }!!
+                .value
 
                 if (closestCenters.size == 1) {
                     point to closestCenters[0]
                 } else null
             }
-        }
     }
 
     private fun isTouchingTheBorder(point: Point) =
