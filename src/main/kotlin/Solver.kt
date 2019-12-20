@@ -92,10 +92,10 @@ fun solveDay05Part2() {
 fun solveDay06Part1And2() {
     val grid = Grid(getLinesFromFile("day_06/input").map {
         val (x, y) = it.split(", ")
-        Coords(x.toInt(), y.toInt())
+        Point(x.toInt(), y.toInt())
     })
     println(grid.largestAreaSize) // 5532
-    println(grid.safeAreaSize) // 36216
+    println(grid.getSafestAreaSizeFor(10000)) // 36216
 }
 
 
