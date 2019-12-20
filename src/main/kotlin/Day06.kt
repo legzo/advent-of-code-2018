@@ -1,64 +1,57 @@
 import kotlin.math.abs
 
-data class Coords(val x: Int, val y: Int)
+data class Point(val x: Int, val y: Int)
 
-data class Grid(val centers: List<Coords>) {
+typealias Center = Point
 
-    val min = Coords(
+data class Grid(val centers: List<Center>) {
+
+    val min = Point(
         x = centers.minBy { it.x }!!.x,
         y = centers.minBy { it.y }!!.y
     )
 
-    val max = Coords(
+    val max = Point(
         x = centers.maxBy { it.x }!!.x,
         y = centers.maxBy { it.y }!!.y
     )
 
     val largestAreaSize: Int
-        get() {
-            val map = mutableMapOf<Coords, Coords?>()
-            for (y in min.y..max.y) {
-                for (x in min.x..max.x) {
-                    val point = Coords(x, y)
-                    val listMinCenter = distanceFromCenters(point)
-                        .minBy { it.key }!!
-                        .value
-                    map[point] =
-                        if (listMinCenter.size == 1) {
-                            listMinCenter[0]
-                        } else {
-                            null
-                        }
-                }
+        get() = pointsToClosestCenter()
+            .groupBy { it.second }
+            .mapValues { it.value.map { (point, _) -> point } }
+            .filter { (_, pointsOfRegion) -> pointsOfRegion.none(::isTouchingTheBorder) }
+            .map { it.value.size }
+            .max() ?: 0
+
+    fun getSafestAreaSizeFor(maxDistance: Int) =
+        (min.y..max.y).flatMap { y ->
+            (min.x..max.x).map { x ->
+                centers.sumBy { Point(x, y).distanceTo(it) }
             }
-
-            val biggestRegion = map.toList()
-                .groupBy { it.second }
-                .mapValues { it.value.map { pair -> pair.first } }
-                .filter { !it.value.any { coords -> coords.x == min.x || coords.x == max.x || coords.y == min.y || coords.y == max.y } }
-                .maxBy { it.value.size }
+        }.count { it < maxDistance }
 
 
-            return biggestRegion?.value?.size ?: 0
-        }
+    private fun pointsToClosestCenter(): List<Pair<Point, Center>> {
+        return (min.y..max.y).flatMap { y ->
+            (min.x..max.x).mapNotNull { x ->
+                val point = Point(x, y)
+                val closestCenters = point.distancesToCenters()
+                    .minBy { it.key }!!
+                    .value
 
-    val safeAreaSize: Int
-        get() {
-            var areaSize = 0
-            for (y in min.y..max.y) {
-                for (x in min.x..max.x) {
-                    val point = Coords(x, y)
-                    val distanceSum = centers
-                        .sumBy { abs(it.x - point.x) + abs(it.y - point.y) }
-                    if (distanceSum < 10000) {
-                        areaSize++
-                    }
-                }
+                if (closestCenters.size == 1) {
+                    point to closestCenters[0]
+                } else null
             }
-            return areaSize
         }
+    }
 
-    private fun distanceFromCenters(point: Coords) = centers
-        .groupBy { abs(it.x - point.x) + abs(it.y - point.y) }
+    private fun isTouchingTheBorder(point: Point) =
+        point.x == min.x || point.x == max.x || point.y == min.y || point.y == max.y
+
+    private fun Point.distancesToCenters(): Map<Int, List<Center>> = centers.groupBy { distanceTo(it) }
+
+    private fun Point.distanceTo(other: Point) = abs(other.x - x) + abs(other.y - y)
 
 }

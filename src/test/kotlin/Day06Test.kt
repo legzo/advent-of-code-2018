@@ -4,20 +4,20 @@ import org.junit.jupiter.api.Test
 class Day06Test {
 
     private val inputCoords = listOf(
-        Coords(x = 1, y = 1),
-        Coords(x = 1, y = 6),
-        Coords(x = 8, y = 3),
-        Coords(x = 3, y = 4),
-        Coords(x = 5, y = 5),
-        Coords(x = 8, y = 9)
+        Point(x = 1, y = 1),
+        Point(x = 1, y = 6),
+        Point(x = 8, y = 3),
+        Point(x = 3, y = 4),
+        Point(x = 5, y = 5),
+        Point(x = 8, y = 9)
     )
 
     @Test
     fun `should build grid from coordinates`() {
         val grid = Grid(inputCoords)
 
-        grid.min shouldBe Coords(x = 1, y = 1)
-        grid.max shouldBe Coords(x = 8, y = 9)
+        grid.min shouldBe Point(x = 1, y = 1)
+        grid.max shouldBe Point(x = 8, y = 9)
     }
 
     @Test
@@ -27,7 +27,7 @@ class Day06Test {
 
     @Test
     fun `should get safeAreas from coordinates`() {
-        Grid(inputCoords).safeAreaSize shouldBe 16
+        Grid(inputCoords).getSafestAreaSizeFor(32) shouldBe 16
     }
 }
 
