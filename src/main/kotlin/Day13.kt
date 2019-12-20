@@ -5,7 +5,6 @@ enum class Cart(val char: Char) {
     FACING_BOTTOM('v'),
     ;
 
-
     val path: Path
         get() = when (this) {
             FACING_LEFT, FACING_RIGHT -> Path.HORIZONTAL
@@ -13,7 +12,7 @@ enum class Cart(val char: Char) {
         }
 
     companion object {
-        fun parse(char: Char): Cart? = Cart.values().firstOrNull { it.char == char }
+        fun parse(char: Char): Cart? = values().firstOrNull { it.char == char }
     }
 }
 
@@ -31,14 +30,13 @@ enum class Path(val char: Char) {
                 return it.path
             }
 
-            return Path.values().firstOrNull { it.char == char }
-        }
+            return values().firstOrNull { it.char == char }        }
     }
 }
 
 data class Tracks(
-    val paths: Map<Coords, Path?>,
-    val carts: Map<Coords, Cart?> // TODO List<Cart> pour que chaque Cart ait un état (virages)
+    val paths: Map<Point, Path?>,
+    val carts: Map<Point, Cart?> // TODO List<Cart> pour que chaque Cart ait un état (virages)
 ) {
     companion object {
         fun from(input: String): Tracks {
@@ -48,7 +46,7 @@ data class Tracks(
                     line.toCharArray().mapIndexed { x, char ->
                         val cart = Cart.parse(char)
                         val path = Path.parse(char, cart)
-                        (Coords(x, y) to cart) to (Coords(x, y) to path)
+                        (Point(x, y) to cart) to (Point(x, y) to path)
                     }
                 }.flatten()
                 .unzip()
@@ -58,4 +56,4 @@ data class Tracks(
     }
 }
 
-operator fun <T> Map<Coords, T?>.get(x: Int, y: Int): T? = this[Coords(x, y)]
+operator fun <T> Map<Point, T?>.get(x: Int, y: Int): T? = this[Point(x, y)]
