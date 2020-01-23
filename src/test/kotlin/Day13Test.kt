@@ -11,11 +11,11 @@ class Day13Test {
     fun `should create tracks from string`() {
         val (paths, carts) = Tracks.from(
             """
-     /----\
-     |    |
-     v    |
-     \----/
-     """.trimIndent()
+             /----\
+             |    |
+             v    |
+             \----/
+             """.trimIndent()
         )
 
         paths[0, 0] shouldBe Path.BOTTOM_TO_RIGHT
@@ -33,11 +33,11 @@ class Day13Test {
     fun `should move a single cart`() {
         val initialTracks = Tracks.from(
             """
-     /----\
-     |    |
-     v    |
-     \----/
-     """.trimIndent()
+             /----\
+             |    |
+             v    |
+             \----/
+             """.trimIndent()
         )
 
         val sequence = generateSequence(initialTracks) {
